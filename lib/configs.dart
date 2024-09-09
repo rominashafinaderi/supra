@@ -1,1 +1,1 @@
-const ASSETS_ANIM_PATH = "assets/background/";
+const ASSETS_ICONS_PATH = "assets/icon/";
