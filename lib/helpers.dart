@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -90,4 +92,9 @@ Future<T?> pushAndRemoveUntil<T extends Object?>(BuildContext context, Widget sc
         transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
       ),
       predicate);
+}
+dynamic jDecode(String json) {
+  return jsonDecode(convertUtf8(json));
+}String convertUtf8(String content) {
+  return Utf8Decoder(allowMalformed: true).convert(content.codeUnits);
 }

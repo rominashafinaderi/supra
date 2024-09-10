@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supra/extentions.dart';
+import 'package:supra/extensions.dart';
 import 'package:supra/helpers.dart';
 import 'package:supra/screen/login_screen.dart';
 import 'package:supra/widget/custom_btn.dart';
@@ -17,7 +17,7 @@ class SignUpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        pushAndRemoveUntil(context, SignInScreen(), (route) => false);
+        pushAndRemoveUntil(context, LoginScreen(), (route) => false);
         return true;
       },
       child: GestureDetector(
@@ -90,7 +90,7 @@ class SignUpScreen extends StatelessWidget {
                         ),
                         GestureDetector(
                             onTap: () {
-                              pushAndRemoveUntil(context, SignInScreen(), (route) => false);
+                              pushAndRemoveUntil(context, LoginScreen(), (route) => false);
                             },
                             child: Text(
                               'Sign in',
@@ -110,7 +110,7 @@ class SignUpScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                   child: InkWell(
                     onTap: () {
-                      pushAndRemoveUntil(context, SignInScreen(), (route) => false);
+                      pushAndRemoveUntil(context, LoginScreen(), (route) => false);
                     },
                     splashColor: Colors.transparent,
                     borderRadius: BorderRadius.circular(15),

@@ -7,14 +7,14 @@ class CustomTextField extends StatefulWidget {
     this.label,
     this.prefixIcon,
     this.controller,
-    this.isPassword = false,
+    this.isPassword = false, this.maxLines=1,
   });
 
   final TextEditingController? controller;
   final String? label;
   final IconData? prefixIcon;
   final bool isPassword;
-
+  final int maxLines;
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
 }
@@ -43,10 +43,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
         style: TextStyle(
           fontSize: 12,
         ),
+        maxLines:widget.maxLines,
         obscureText: widget.isPassword && _obscureText,
         decoration: InputDecoration(
           labelText: widget.label,
-          labelStyle: TextStyle(color: Colors.black54),
+          alignLabelWithHint: true,
+          labelStyle: TextStyle(color: Colors.black54,),
           filled: true,
           fillColor: white.withOpacity(0.8),
           border: OutlineInputBorder(

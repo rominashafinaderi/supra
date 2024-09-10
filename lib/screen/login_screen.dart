@@ -1,23 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supra/api/auth/login/login_bloc.dart';
 import 'package:supra/colors.dart';
-import 'package:supra/extentions.dart';
+import 'package:supra/extensions.dart';
 import 'package:supra/helpers.dart';
 import 'package:supra/screen/sign_up_screen.dart';
 import 'package:supra/widget/custom_btn.dart';
 import 'package:supra/widget/logo_box.dart';
 
 import '../widget/custom_text_field.dart';
+import 'note_list_screen.dart';
 
-class SignInScreen extends StatefulWidget {
+class LoginScreen extends StatefulWidget {
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
 
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController fingerPrintController = TextEditingController();
   bool rememberPass = false;
+  late LoginBloc loginBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    loginBloc = LoginBloc();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +75,13 @@ class _SignInScreenState extends State<SignInScreen> {
                     prefixIcon: Icons.lock,
                   ),
                   25.height,
+                  // CustomTextField(
+                  //   // isPassword: true,
+                  //   label: 'fingerprint text',
+                  //   controller: fingerPrintController,
+                  //   prefixIcon: Icons.fingerprint,
+                  // ),
+                  // 25.height,
                   // const Align(
                   //     alignment: Alignment.centerRight,
                   //     child: Text(
@@ -71,7 +89,33 @@ class _SignInScreenState extends State<SignInScreen> {
                   //       style: TextStyle(color: Colors.deepPurple, fontSize: 15, fontWeight: FontWeight.bold),
                   //     )),
                   // 20.height,
-                  customBtn('Sign in', () {}),
+                  BlocConsumer(
+                    bloc: loginBloc,
+                    listener: (context, state) {
+                      if (state is LoginSuccessState) {
+                        push(context, NoteListScreen());
+                        print("Loading...");
+                      }
+                      if (state is LoginErrorState) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is LoginLoadingState) {
+                        print("Loading..s.");
+
+                        return CircularProgressIndicator();
+                      } else {
+                        return customBtn('Sign in', () {
+                          loginBloc.add(LoginEvent(
+                              email: emailController.text,
+                              fingerprint: 'ifxzidudzt',
+                             password: passwordController.text
+                          ));
+                        });
+                      }
+                    },
+                  ),
                   10.height,
                   Align(
                     alignment: Alignment.centerRight,
