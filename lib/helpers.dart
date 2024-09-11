@@ -94,7 +94,7 @@ Future<T?> pushAndRemoveUntil<T extends Object?>(BuildContext context, Widget sc
       predicate);
 }
 dynamic jDecode(String json) {
-  return jsonDecode(convertUtf8(json));
+  return jsonDecode(json);
 }String convertUtf8(String content) {
   return Utf8Decoder(allowMalformed: true).convert(content.codeUnits);
 }
