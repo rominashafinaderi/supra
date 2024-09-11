@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supra/api/noteList/note_list_bloc.dart';
 import 'package:supra/colors.dart';
 import 'package:supra/extensions.dart';
 import 'package:supra/models/note_model.dart';
 
 class NoteCard extends StatefulWidget {
-  const NoteCard({super.key, required this.note});
+  const NoteCard({super.key, required this.note, this.onDeletePressed, this.onUpdatePressed});
+  final VoidCallback? onDeletePressed;
+  final VoidCallback? onUpdatePressed;
 
   final Note note;
 
@@ -58,11 +62,11 @@ class _NoteCardState extends State<NoteCard> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       IconButton(
-                        onPressed: () {},
+                        onPressed: widget.onUpdatePressed,
                         icon: Icon(Icons.edit, color: darkPurple),
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: widget.onDeletePressed,
                         icon: Icon(
                           Icons.delete_rounded,
                           color: darkPurple,

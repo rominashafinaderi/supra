@@ -6,6 +6,7 @@ import 'package:supra/extensions.dart';
 import 'package:supra/helpers.dart';
 import 'package:supra/models/note_model.dart';
 import 'package:supra/screen/add_note_screen.dart';
+import 'package:supra/screen/update_note_screen.dart';
 import 'package:supra/widget/note_card.dart';
 
 class NoteListScreen extends StatefulWidget {
@@ -16,14 +17,15 @@ class NoteListScreen extends StatefulWidget {
 }
 
 class _NoteListScreenState extends State<NoteListScreen> {
-  late NoteListBloc noteListBloc;
+  NoteListBloc noteListBloc = NoteListBloc();
 
   @override
   void initState() {
     super.initState();
-    noteListBloc = NoteListBloc();
     noteListBloc.add(FetchNotes());
   }
+
+  List<Note> notes = [];
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +59,11 @@ class _NoteListScreenState extends State<NoteListScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: darkPurple,
-        onPressed: () {
-          push(context, AddNoteScreen());
+        onPressed: () async {
+          final result = await push(context, AddNoteScreen());
+          if (result == true) {
+            noteListBloc.add(FetchNotes());
+          }
         },
         child: Icon(
           Icons.add,
@@ -66,29 +71,58 @@ class _NoteListScreenState extends State<NoteListScreen> {
           size: 30,
         ),
       ),
-      body: BlocBuilder<NoteListBloc, NoteListState>(
+      body: BlocConsumer<NoteListBloc, NoteListState>(
         bloc: noteListBloc,
+        listener: (context, state) {
+          if (state is! NoteListSuccess) return;
+
+          notes = state.notes;
+        },
         builder: (context, state) {
           if (state is NoteListLoading) {
             return Center(child: CircularProgressIndicator());
-          } else if (state is NoteListError) {
+          }
+          if (state is NoteListError) {
             return Center(
-              child: Text('Error: ${state.message}'), // نمایش پیام خطا
+              child: Text('Error: ${state.message}'),
             );
-          } else if (state is NoteListSuccess) {
+          }
+          if (state is NoteListSuccess) {
             return ListView.separated(
-              itemCount: state.notes.length,
+              itemCount: notes.length,
               itemBuilder: (context, index) {
-                final noteModel = state.notes[index];
-                return NoteCard(note: noteModel);
+                final note = notes[index];
+                return NoteCard(
+                  note: note,
+                  onDeletePressed: () {
+                    noteListBloc.add(DeleteNote(note.id));
+                  },
+                    onUpdatePressed: () async {
+
+                      final result = await push(
+                        context,
+                        UpdateNoteScreen(
+                          note: note,
+                          onBtnUpdatePressed: () {
+                          },
+                        ),
+                      );
+
+                      if (result is Note) {
+                        setState(() {
+                          notes[index] = result;
+                        });
+                      }
+                    }
+                );
               },
               separatorBuilder: (context, index) {
                 return 10.height;
               },
             );
-          } else {
-            return Container();
           }
+
+          return Container();
         },
       ),
     );

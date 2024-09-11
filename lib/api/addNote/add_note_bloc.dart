@@ -3,6 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supra/api/noteList/note_list_bloc.dart';
 import 'package:supra/api/response_extensions.dart';  // Import SharedPreferences
 
 part 'add_note_event.dart';
@@ -33,6 +34,7 @@ class AddNoteBloc extends Bloc<AddNoteEvent, AddNoteState> {
 
       if (response.statusCode == 200) {
         emit(AddNoteSuccess());
+
       } else {
         emit(AddNoteError(response));
       }

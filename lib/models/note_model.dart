@@ -1,10 +1,10 @@
 class Note {
-  final int id;
-  final String userId;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String title;
-  final String content;
+  int id;
+  String userId;
+  DateTime createdAt;
+  DateTime updatedAt;
+  String title;
+  String content;
 
   Note({
     required this.id,

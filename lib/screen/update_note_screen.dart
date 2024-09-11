@@ -1,27 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supra/api/addNote/add_note_bloc.dart';
 import 'package:supra/colors.dart';
 import 'package:supra/extensions.dart';
+import 'package:supra/models/note_model.dart';
 import 'package:supra/widget/custom_btn.dart';
 import 'package:supra/widget/custom_text_field.dart';
 
-class AddNoteScreen extends StatefulWidget {
-  const AddNoteScreen({super.key});
+import '../api/noteList/note_list_bloc.dart';
+
+class UpdateNoteScreen extends StatefulWidget {
+  const UpdateNoteScreen(
+      {super.key, required this.note, this.onBtnUpdatePressed});
+
+  final Note note;
+  final VoidCallback? onBtnUpdatePressed;
 
   @override
-  State<AddNoteScreen> createState() => _AddNoteScreenState();
+  State<UpdateNoteScreen> createState() => _UpdateNoteScreenState();
 }
 
-class _AddNoteScreenState extends State<AddNoteScreen> {
-  TextEditingController titleController = TextEditingController();
-  TextEditingController contentController = TextEditingController();
-  late AddNoteBloc addNoteBloc;
+class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
+  late TextEditingController titleController;
+  late TextEditingController contentController;
+
+  NoteListBloc noteListBloc = NoteListBloc();
 
   @override
   void initState() {
     super.initState();
-    addNoteBloc = AddNoteBloc();
+    titleController = TextEditingController(text: widget.note.title);
+    contentController = TextEditingController(text: widget.note.content);
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    contentController.dispose();
+    super.dispose(
+    );
   }
 
   @override
@@ -30,7 +46,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
       backgroundColor: white,
       appBar: AppBar(
         title: Text(
-          'Add Notes',
+          'Update Notes',
           style: TextStyle(color: white),
         ),
         centerTitle: true,
@@ -60,25 +76,29 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                 controller: contentController,
               ),
               20.height,
-              BlocConsumer(
-                bloc: addNoteBloc,
+              BlocConsumer<NoteListBloc, NoteListState>(
+                bloc: noteListBloc,
                 listener: (context, state) {
-                  if (state is AddNoteSuccess) {
-                    Navigator.pop(context,true);
+                  if (state is NoteListError) {
+                    // toast message error
                   }
-                  if (state is AddNoteError) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
+                  if (state is NoteListSuccess) {
+                    widget.note.title = titleController.text.trim();
+                    widget.note.content = contentController.text.trim();
+
+                    Navigator.pop(context, widget.note);
                   }
                 },
                 builder: (context, state) {
-                  if (state is AddNoteLoading) {
+                  if (state is NoteListLoading) {
                     return CircularProgressIndicator();
                   }
-                  return customBtn('Add Note', () {
-                    addNoteBloc.add(AddNoteEvent(
-                      title: titleController.text,
-                      content: contentController.text,
+
+                  return customBtn('Update Note', () {
+                    noteListBloc.add(UpdateNote(
+                      titleController.text.trim(),
+                      contentController.text.trim(),
+                      widget.note.id,
                     ));
                   });
                 },
