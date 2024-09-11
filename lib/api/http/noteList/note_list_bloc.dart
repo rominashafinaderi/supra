@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supra/api/response_extensions.dart';
+import 'package:supra/api/toekn_manager.dart';
 import 'package:supra/models/note_model.dart';
 
 part 'note_list_event.dart';
@@ -47,8 +48,8 @@ class NoteListBloc extends Bloc<NoteListEvent, NoteListState> {
   Future<void> deleteNoteApi(int noteId) async {
     final url = Uri.parse('http://192.168.8.115:4000/posts/$noteId');
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('accessToken'); // Retrieve the token
+      final token = await TokenManager.getToken();
+
       final response = await http.delete(
         url,
         headers: {
@@ -82,8 +83,8 @@ class NoteListBloc extends Bloc<NoteListEvent, NoteListState> {
     emit(NoteListLoading());
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('accessToken');
+      final token = await TokenManager.getToken();
+
       final url = Uri.parse('http://192.168.8.115:4000/posts/${event.noteId}');
       final response = await http.patch(url, headers: {
         'Content-Type': 'application/json',

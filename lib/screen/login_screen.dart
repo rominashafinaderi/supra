@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supra/api/auth/login/login_bloc.dart';
+import 'package:supra/api/http/auth/login/login_bloc.dart';
 import 'package:supra/colors.dart';
 import 'package:supra/extensions.dart';
 import 'package:supra/helpers.dart';

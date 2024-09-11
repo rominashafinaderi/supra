@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supra/api/noteList/note_list_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supra/api/http/auth/logout/logout_bloc.dart';
+import 'package:supra/api/http/noteList/note_list_bloc.dart';
+import 'package:supra/api/toekn_manager.dart';
 import 'package:supra/colors.dart';
 import 'package:supra/extensions.dart';
 import 'package:supra/helpers.dart';
 import 'package:supra/models/note_model.dart';
 import 'package:supra/screen/add_note_screen.dart';
+import 'package:supra/screen/login_screen.dart';
 import 'package:supra/screen/update_note_screen.dart';
 import 'package:supra/widget/note_card.dart';
+
 
 class NoteListScreen extends StatefulWidget {
   const NoteListScreen({super.key});
@@ -18,7 +23,7 @@ class NoteListScreen extends StatefulWidget {
 
 class _NoteListScreenState extends State<NoteListScreen> {
   NoteListBloc noteListBloc = NoteListBloc();
-
+  LogoutBloc logoutBloc = LogoutBloc();
   @override
   void initState() {
     super.initState();
@@ -39,7 +44,12 @@ class _NoteListScreenState extends State<NoteListScreen> {
         centerTitle: true,
         backgroundColor: darkPurple,
         leading: IconButton(
-          onPressed: () {},
+          onPressed: () async{
+            final token = await TokenManager.getToken();
+
+            logoutBloc.add(LogoutEvent(token: token!));
+            pushAndRemoveUntil(context, LoginScreen(), (route)=>false);
+          },
           icon: Icon(
             Icons.exit_to_app_outlined,
             color: white,

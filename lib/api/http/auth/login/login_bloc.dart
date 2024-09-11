@@ -6,6 +6,7 @@ import 'package:http/http.dart';
 import 'package:meta/meta.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supra/api/response_extensions.dart';
+import 'package:supra/api/toekn_manager.dart';
 
 part 'login_event.dart';
 
@@ -35,10 +36,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       if (response.statusCode == 200) {
         emit(LoginSuccessState());
         final data = jsonDecode(response.body);
-        final token = data["data"]['accessToken'];
-        print('tokeeen:$token');
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('accessToken', token);
+        await TokenManager.saveToken(data["data"]['accessToken']);
+
       } else {
         emit(LoginErrorState(response));
       }
