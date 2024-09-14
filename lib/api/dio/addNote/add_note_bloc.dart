@@ -1,11 +1,12 @@
 import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
-import 'package:http/http.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:supra/api/response_extensions.dart';
-import 'package:supra/api/toekn_manager.dart';  // Import SharedPreferences
+import 'package:supra/api/toekn_manager.dart'; // Import SharedPreferences
 
 part 'add_note_event.dart';
+
 part 'add_note_state.dart';
 
 class AddNoteBloc extends Bloc<AddNoteEvent, AddNoteState> {
@@ -16,22 +17,19 @@ class AddNoteBloc extends Bloc<AddNoteEvent, AddNoteState> {
   Future _onEvent(AddNoteEvent event, Emitter<AddNoteState> emit) async {
     emit(AddNoteLoading());
     Response response;
-    final url = Uri.parse('http://192.168.8.115:4000/posts');
+    Dio dio = Dio();
+    final url = 'http://192.168.8.115:4000/posts';
     try {
-      final token = await TokenManager.getToken();
-      response = await http.post(url,
-          body: jsonEncode({
-            'title': event.title,
-            'content': event.content
-          }),
-          headers: {
+      final token = await TokenManager.getAccessToken();
+      response = await dio.post(url,
+          data:{'title': event.title, 'content': event.content},
+          options: Options(headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token'  // Add the token to the header
-          });
+            'Authorization': 'Bearer $token' // Add the token to the header
+          }));
 
       if (response.statusCode == 200) {
         emit(AddNoteSuccess());
-
       } else {
         emit(AddNoteError(response));
       }

@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 import 'package:supra/api/response_extensions.dart';
 import 'package:supra/api/toekn_manager.dart';
 import 'package:supra/models/note_model.dart';
@@ -26,15 +24,16 @@ class NoteListBloc extends Bloc<NoteListEvent, NoteListState> {
   ) async {
     emit(NoteListLoading());
 
-    final url = Uri.parse('http://192.168.8.115:4000/posts');
+    final url = 'http://192.168.8.115:4000/posts';
     Response response;
+    Dio dio= Dio();
     try {
-      response = await http.get(
+      response = await dio.get(
         url,
-        headers: {
+          options: Options(headers:  {
           'Accept-Charset': 'utf-8',
         },
-      );
+      ));
       if (response.statusCode == 200) {
         emit(NoteListSuccess(response));
       } else {
@@ -46,19 +45,21 @@ class NoteListBloc extends Bloc<NoteListEvent, NoteListState> {
   }
 
   Future<void> deleteNoteApi(int noteId) async {
-    final url = Uri.parse('http://192.168.8.115:4000/posts/$noteId');
-    try {
-      final token = await TokenManager.getToken();
+    Dio dio= Dio();
 
-      final response = await http.delete(
+    final url = 'http://192.168.8.115:4000/posts/$noteId';
+    try {
+      final token = await TokenManager.getAccessToken();
+      print("ddddddddddddd :$token");
+      final response = await dio.delete(
         url,
-        headers: {
+          options: Options(headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token' // Add the token to the header
         },
-      );
+      ));
       if (response.statusCode != 200) {
-        print('Error in delete API call: ${response.reasonPhrase}');
+        print('Error in delete API call: ${response.statusMessage}');
       }
     } catch (e) {
       print('Error in delete API call: $e');
@@ -66,6 +67,7 @@ class NoteListBloc extends Bloc<NoteListEvent, NoteListState> {
   }
 
   Future<void> _onDeleteNote(
+
     DeleteNote event,
     Emitter<NoteListState> emit,
   ) async {
@@ -81,28 +83,24 @@ class NoteListBloc extends Bloc<NoteListEvent, NoteListState> {
 
   Future<void> _onUpdateNote(UpdateNote event, Emitter<NoteListState> emit) async {
     emit(NoteListLoading());
+    Dio dio= Dio();
 
     try {
-      final token = await TokenManager.getToken();
+      final token = await TokenManager.getAccessToken();
 
-      final url = Uri.parse('http://192.168.8.115:4000/posts/${event.noteId}');
-      final response = await http.patch(url, headers: {
+      final url = 'http://192.168.8.115:4000/posts/${event.noteId}';
+      final response = await dio.patch(url,  options: Options(headers:  {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token' // Add the token to the header
-      }, body: jsonEncode({
+      }), data: {
         'title': event.title,
         'content': event.content,
-      }),);
-      final body = jsonEncode({
-        'title': event.title,
-        'content': event.content,
-      });
-      print('Request body: $body');
+      },);
 
       if (response.statusCode == 200) {
         await _onNoteList(FetchNotes(), emit);
       } else {
-        print('Error in update API call: ${response.reasonPhrase}');
+        print('Error in update API call: ${response.statusMessage}');
         emit(NoteListError(response));
       }
     } catch (e) {

@@ -1,15 +1,11 @@
 import 'dart:convert';
-
 import 'package:bloc/bloc.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
+import 'package:dio/dio.dart';
 import 'package:meta/meta.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supra/api/response_extensions.dart';
 import 'package:supra/api/toekn_manager.dart';
-
 part 'login_event.dart';
-
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
@@ -17,27 +13,29 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on(_onLoginEvent);
   }
 
-  Future  _onLoginEvent(LoginEvent event, Emitter<LoginState> emit) async {
+  Future _onLoginEvent(LoginEvent event, Emitter<LoginState> emit) async {
     emit(LoginLoadingState());
     Response response;
-    final url = Uri.parse('http://192.168.8.115:4000/auth/login');
+    Dio dio = Dio();
+
+    final url = 'http://192.168.8.115:4000/auth/login';
     try {
-      response = await http.post(url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
+      response = await dio.post(url,
+          options: Options(headers: {'Content-Type': 'application/json'}),
+          data: {
             'email': event.email,
             'password': event.password,
             'fingerprint': event.fingerprint
-          }));
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+          });
 
       if (response.statusCode == 200) {
         emit(LoginSuccessState());
-        final data = jsonDecode(response.body);
-        await TokenManager.saveToken(data["data"]['accessToken']);
+        print('adsdffd');
 
+        final data = response.data;
+
+        await TokenManager.saveAccessToken(data["data"]['accessToken']);
+        await TokenManager.saveRefreshToken(data["data"]['refreshToken']);
       } else {
         emit(LoginErrorState(response));
       }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supra/api/http/auth/login/login_bloc.dart';
+import 'package:supra/api/dio/auth/login/login_bloc.dart';
 import 'package:supra/colors.dart';
 import 'package:supra/extensions.dart';
 import 'package:supra/helpers.dart';
@@ -93,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     bloc: loginBloc,
                     listener: (context, state) {
                       if (state is LoginSuccessState) {
-                        push(context, NoteListScreen());
+                        pushAndRemoveUntil(context, NoteListScreen(),(route) => false,);
                         print("Loading...");
                       }
                       if (state is LoginErrorState) {

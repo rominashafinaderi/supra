@@ -9,9 +9,17 @@ class NoteListLoading extends NoteListState {}
 class NoteListSuccess extends NoteListState {
   late final List<Note> notes;
 
-  NoteListSuccess(Response response) {
-    notes = Note.fromList(response.fetchData());
-  }
+
+    NoteListSuccess(Response response) {
+      final data = response.data["data"];
+      if (data is List) {
+        notes = Note.fromList(data);
+      } else {
+        print('Error: Response data is not a list. Data: $data');
+        notes = [];
+      }
+    }
+
 }
 
 class NoteListError extends NoteListState {

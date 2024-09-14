@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supra/api/http/addNote/add_note_bloc.dart';
+import 'package:supra/api/dio/addNote/add_note_bloc.dart';
 import 'package:supra/colors.dart';
 import 'package:supra/extensions.dart';
 import 'package:supra/widget/custom_btn.dart';

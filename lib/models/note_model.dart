@@ -38,7 +38,8 @@ class Note {
       'content': content,
     };
   }
-  static List<Note> fromList(data){
+
+static List<Note> fromList(data){
     if(data is! List) print( 'data is not list in note lists');
     List<Note> list = [];
     for(var item in data){

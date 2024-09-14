@@ -1,9 +1,9 @@
- import 'package:http/http.dart';
+import 'package:dio/dio.dart';
 import 'package:supra/helpers.dart';
 
 extension ResponseExtensions on Response{
   dynamic getObjectBody() {
-    return jDecode(this.body);
+    return jDecode(this.data);
   }
 
   String fetchMessage(){
@@ -14,6 +14,6 @@ extension ResponseExtensions on Response{
     }
   }
   dynamic fetchData() {
-    return jDecode(this.body)["data"];
+    return jDecode(this.data)["data"];
   }
 }

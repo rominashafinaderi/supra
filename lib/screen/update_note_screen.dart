@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supra/api/http/noteList/note_list_bloc.dart';
+import 'package:supra/api/dio/noteList/note_list_bloc.dart';
 import 'package:supra/colors.dart';
 import 'package:supra/extensions.dart';
 import 'package:supra/models/note_model.dart';

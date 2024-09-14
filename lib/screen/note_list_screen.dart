@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supra/api/http/auth/logout/logout_bloc.dart';
-import 'package:supra/api/http/noteList/note_list_bloc.dart';
+import 'package:supra/api/dio/noteList/note_list_bloc.dart';
+
 import 'package:supra/api/toekn_manager.dart';
 import 'package:supra/colors.dart';
 import 'package:supra/extensions.dart';
@@ -12,6 +11,8 @@ import 'package:supra/screen/add_note_screen.dart';
 import 'package:supra/screen/login_screen.dart';
 import 'package:supra/screen/update_note_screen.dart';
 import 'package:supra/widget/note_card.dart';
+
+import '../api/dio/auth/logout/logout_bloc.dart';
 
 
 class NoteListScreen extends StatefulWidget {
@@ -45,8 +46,8 @@ class _NoteListScreenState extends State<NoteListScreen> {
         backgroundColor: darkPurple,
         leading: IconButton(
           onPressed: () async{
-            final token = await TokenManager.getToken();
-
+            final token = await TokenManager.getAccessToken();
+            print('token logout $token');
             logoutBloc.add(LogoutEvent(token: token!));
             pushAndRemoveUntil(context, LoginScreen(), (route)=>false);
           },
@@ -81,23 +82,23 @@ class _NoteListScreenState extends State<NoteListScreen> {
           size: 30,
         ),
       ),
-      body: BlocConsumer<NoteListBloc, NoteListState>(
+      body:BlocConsumer<NoteListBloc, NoteListState>(
         bloc: noteListBloc,
         listener: (context, state) {
-          if (state is! NoteListSuccess) return;
-
-          notes = state.notes;
+          if (state is NoteListSuccess) {
+            setState(() {
+              notes = state.notes;
+            });
+          }
         },
         builder: (context, state) {
           if (state is NoteListLoading) {
             return Center(child: CircularProgressIndicator());
           }
           if (state is NoteListError) {
-            return Center(
-              child: Text('Error: ${state.message}'),
-            );
+            return Center(child: Text('Error: ${state.message}'));
           }
-          if (state is NoteListSuccess) {
+          if (state is NoteListSuccess && state.notes.isNotEmpty) {
             return ListView.separated(
               itemCount: notes.length,
               itemBuilder: (context, index) {
@@ -107,23 +108,21 @@ class _NoteListScreenState extends State<NoteListScreen> {
                   onDeletePressed: () {
                     noteListBloc.add(DeleteNote(note.id));
                   },
-                    onUpdatePressed: () async {
+                  onUpdatePressed: () async {
+                    final result = await push(
+                      context,
+                      UpdateNoteScreen(
+                        note: note,
+                        onBtnUpdatePressed: () {},
+                      ),
+                    );
 
-                      final result = await push(
-                        context,
-                        UpdateNoteScreen(
-                          note: note,
-                          onBtnUpdatePressed: () {
-                          },
-                        ),
-                      );
-
-                      if (result is Note) {
-                        setState(() {
-                          notes[index] = result;
-                        });
-                      }
+                    if (result is Note) {
+                      setState(() {
+                        notes[index] = result;
+                      });
                     }
+                  },
                 );
               },
               separatorBuilder: (context, index) {
@@ -132,9 +131,10 @@ class _NoteListScreenState extends State<NoteListScreen> {
             );
           }
 
-          return Container();
+          return Center(child: Text('No notes available'));
         },
-      ),
+      )
+
     );
   }
 }
