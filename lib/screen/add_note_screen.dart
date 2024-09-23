@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supra/api/dio/addNote/add_note_bloc.dart';
 import 'package:supra/colors.dart';
+import 'package:supra/db/db_helper.dart';
 import 'package:supra/extensions.dart';
 import 'package:supra/widget/custom_btn.dart';
 import 'package:supra/widget/custom_text_field.dart';
@@ -23,7 +24,9 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
     super.initState();
     addNoteBloc = AddNoteBloc();
   }
-
+void saveNote() async{
+    await DatabaseHelper.instance.addNotes(titleController.text, contentController.text);
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,30 +62,31 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                 maxLines: 20,
                 controller: contentController,
               ),
+              customBtn('Add Note',saveNote),
               20.height,
-              BlocConsumer(
-                bloc: addNoteBloc,
-                listener: (context, state) {
-                  if (state is AddNoteSuccess) {
-                    Navigator.pop(context,true);
-                  }
-                  if (state is AddNoteError) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
-                  }
-                },
-                builder: (context, state) {
-                  if (state is AddNoteLoading) {
-                    return CircularProgressIndicator();
-                  }
-                  return customBtn('Add Note', () {
-                    addNoteBloc.add(AddNoteEvent(
-                      title: titleController.text,
-                      content: contentController.text,
-                    ));
-                  });
-                },
-              )
+              // BlocConsumer(
+              //   bloc: addNoteBloc,
+              //   listener: (context, state) {
+              //     if (state is AddNoteSuccess) {
+              //       Navigator.pop(context,true);
+              //     }
+              //     if (state is AddNoteError) {
+              //       ScaffoldMessenger.of(context)
+              //           .showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
+              //     }
+              //   },
+              //   builder: (context, state) {
+              //     if (state is AddNoteLoading) {
+              //       return CircularProgressIndicator();
+              //     }
+              //     return customBtn('Add Note', () {
+              //       addNoteBloc.add(AddNoteEvent(
+              //         title: titleController.text,
+              //         content: contentController.text,
+              //       ));
+              //     });
+              //   },
+              // )
             ],
           ),
         ),

@@ -7,12 +7,14 @@ import 'package:supra/models/note_model.dart';
 import 'package:supra/widget/custom_btn.dart';
 import 'package:supra/widget/custom_text_field.dart';
 
+import '../db/db_helper.dart';
+
 
 class UpdateNoteScreen extends StatefulWidget {
   const UpdateNoteScreen(
       {super.key, required this.note, this.onBtnUpdatePressed});
 
-  final Note note;
+  final Map<String,dynamic> note;
   final VoidCallback? onBtnUpdatePressed;
 
   @override
@@ -28,8 +30,8 @@ class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
   @override
   void initState() {
     super.initState();
-    titleController = TextEditingController(text: widget.note.title);
-    contentController = TextEditingController(text: widget.note.content);
+    titleController = TextEditingController(text: widget.note['title']);
+    contentController = TextEditingController(text: widget.note['content']);
   }
 
   @override
@@ -38,6 +40,11 @@ class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
     contentController.dispose();
     super.dispose(
     );
+  }
+  void _updateNote() async {
+    await DatabaseHelper.instance.updateNote(widget.note['id'],  titleController.text.trim(),
+      contentController.text.trim(),);
+    setState(() {});
   }
 
   @override
@@ -83,8 +90,8 @@ class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
                     // toast message error
                   }
                   if (state is NoteListSuccess) {
-                    widget.note.title = titleController.text.trim();
-                    widget.note.content = contentController.text.trim();
+                    widget.note['title'] = titleController.text.trim();
+                    widget.note['content'] = contentController.text.trim();
 
                     Navigator.pop(context, widget.note);
                   }
@@ -95,11 +102,7 @@ class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
                   }
 
                   return customBtn('Update Note', () {
-                    noteListBloc.add(UpdateNote(
-                      titleController.text.trim(),
-                      contentController.text.trim(),
-                      widget.note.id,
-                    ));
+                   _updateNote();
                   });
                 },
               )

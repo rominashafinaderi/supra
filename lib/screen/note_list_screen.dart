@@ -4,6 +4,7 @@ import 'package:supra/api/dio/noteList/note_list_bloc.dart';
 
 import 'package:supra/api/toekn_manager.dart';
 import 'package:supra/colors.dart';
+import 'package:supra/db/db_helper.dart';
 import 'package:supra/extensions.dart';
 import 'package:supra/helpers.dart';
 import 'package:supra/models/note_model.dart';
@@ -11,6 +12,7 @@ import 'package:supra/screen/add_note_screen.dart';
 import 'package:supra/screen/login_screen.dart';
 import 'package:supra/screen/update_note_screen.dart';
 import 'package:supra/widget/note_card.dart';
+import 'package:supra/widget/second_note_card.dart';
 
 import '../api/dio/auth/logout/logout_bloc.dart';
 
@@ -25,6 +27,7 @@ class NoteListScreen extends StatefulWidget {
 class _NoteListScreenState extends State<NoteListScreen> {
   NoteListBloc noteListBloc = NoteListBloc();
   LogoutBloc logoutBloc = LogoutBloc();
+
   @override
   void initState() {
     super.initState();
@@ -45,11 +48,11 @@ class _NoteListScreenState extends State<NoteListScreen> {
         centerTitle: true,
         backgroundColor: darkPurple,
         leading: IconButton(
-          onPressed: () async{
+          onPressed: () async {
             final token = await TokenManager.getAccessToken();
             print('token logout $token');
             logoutBloc.add(LogoutEvent(token: token!));
-            pushAndRemoveUntil(context, LoginScreen(), (route)=>false);
+            pushAndRemoveUntil(context, LoginScreen(), (route) => false);
           },
           icon: Icon(
             Icons.exit_to_app_outlined,
@@ -82,58 +85,95 @@ class _NoteListScreenState extends State<NoteListScreen> {
           size: 30,
         ),
       ),
-      body:BlocConsumer<NoteListBloc, NoteListState>(
-        bloc: noteListBloc,
-        listener: (context, state) {
-          if (state is NoteListSuccess) {
-            setState(() {
-              notes = state.notes;
-            });
-          }
-        },
-        builder: (context, state) {
-          if (state is NoteListLoading) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (state is NoteListError) {
-            return Center(child: Text('Error: ${state.message}'));
-          }
-          if (state is NoteListSuccess && state.notes.isNotEmpty) {
-            return ListView.separated(
-              itemCount: notes.length,
-              itemBuilder: (context, index) {
-                final note = notes[index];
-                return NoteCard(
-                  note: note,
-                  onDeletePressed: () {
-                    noteListBloc.add(DeleteNote(note.id));
-                  },
-                  onUpdatePressed: () async {
-                    final result = await push(
-                      context,
-                      UpdateNoteScreen(
-                        note: note,
-                        onBtnUpdatePressed: () {},
-                      ),
-                    );
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+          future: DatabaseHelper.instance.getNote(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+           return ListView.separated(
+             itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          var note =  snapshot.data![index];
+                          return SecondNoteCard(
+                            note: note,
 
-                    if (result is Note) {
-                      setState(() {
-                        notes[index] = result;
-                      });
-                    }
-                  },
-                );
-              },
-              separatorBuilder: (context, index) {
-                return 10.height;
-              },
-            );
-          }
+                            onUpdatePressed: () async {
+                              final result = await push(
+                                context,
+                                UpdateNoteScreen(
+                                  note: note,
+                                  onBtnUpdatePressed: () {},
+                                ),
+                              );
 
-          return Center(child: Text('No notes available'));
-        },
-      )
+                              // if (result is Note) {
+                              //   setState(() {
+                              //     notes[index] = result;
+                              //   });
+                              // }
+                            },
+                          );
+                        },
+                        separatorBuilder: (context, index) {
+                          return 10.height;
+                        },
+                      );
+
+          }
+      ),
+      // body:BlocConsumer<NoteListBloc, NoteListState>(
+      //   bloc: noteListBloc,
+      //   listener: (context, state) {
+      //     if (state is NoteListSuccess) {
+      //       setState(() {
+      //         notes = state.notes;
+      //       });
+      //     }
+      //   },
+      //   builder: (context, state) {
+      //     if (state is NoteListLoading) {
+      //       return Center(child: CircularProgressIndicator());
+      //     }
+      //     if (state is NoteListError) {
+      //       return Center(child: Text('Error: ${state.message}'));
+      //     }
+      //     if (state is NoteListSuccess && state.notes.isNotEmpty) {
+      //       return ListView.separated(
+      //         itemCount: notes.length,
+      //         itemBuilder: (context, index) {
+      //           final note = notes[index];
+      //           return NoteCard(
+      //             note: note,
+      //             onDeletePressed: () {
+      //               noteListBloc.add(DeleteNote(note.id));
+      //             },
+      //             onUpdatePressed: () async {
+      //               final result = await push(
+      //                 context,
+      //                 UpdateNoteScreen(
+      //                   note: note,
+      //                   onBtnUpdatePressed: () {},
+      //                 ),
+      //               );
+      //
+      //               if (result is Note) {
+      //                 setState(() {
+      //                   notes[index] = result;
+      //                 });
+      //               }
+      //             },
+      //           );
+      //         },
+      //         separatorBuilder: (context, index) {
+      //           return 10.height;
+      //         },
+      //       );
+      //     }
+      //
+      //     return Center(child: Text('No notes available'));
+      //   },
+      // )
 
     );
   }
